@@ -46,12 +46,14 @@ app.get("/scrape", function (req, res) {
             var link = $(element).children("a").attr("href");
             var image = $(element).children("img.ba-picture--fit");
 
-            // If this found element had both a title and a link
-            if (title && link) {
-                // Insert data in the scrapedRecommendations db
-                db.scrapedRecommendations.insert({
-                    title: title,
-                    link: link
+            // If this found element had both a title, summary, link, and article
+            if (title && summary && link && image) {
+                // Insert data in the scrapedArticles db
+                db.scrapedArticles.insert({
+                    title,
+                    summary,
+                    link,
+                    image
                 },
                     function (err, inserted) {
                         if (err) {
