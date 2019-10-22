@@ -42,7 +42,9 @@ app.get("/scrape", function (req, res) {
         $("h1").each(function (i, element) {
             // Save the text and href of each link enclosed in the current element
             var title = $(element).children("a").text();
+            var summary = $(element).children("p.feature-item-dek").text();
             var link = $(element).children("a").attr("href");
+            var image = $(element).children("img.ba-picture--fit");
 
             // If this found element had both a title and a link
             if (title && link) {
