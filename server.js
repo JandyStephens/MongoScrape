@@ -11,7 +11,7 @@ var cheerio = require("cheerio");
 var PORT = 9001;
 
 // Require all models
-// var db = require("./models");
+var db = require("./models");
 
 // Initialize Express
 var app = express();
@@ -29,7 +29,7 @@ app.use(express.static("public"));
 //connect mongoose to your remote mongolab database if deployed, otherwise will connect to the local database on your computer
 var MONGODB_URI = process.env.MONGODB_URI || "mongodb://localhost/bonappetit";
 
-mongoose.connect(MONGODB_URI);
+mongoose.connect(MONGODB_URI, { useNewUrlParser: true });
 
 
 // A GET route for scraping the echoJS website
@@ -44,7 +44,7 @@ app.get("/scrape", function (req, res) {
         // Now, we grab every h2 within an article tag, and do the following:
         $(".tease.article").each(function (i, element) {
             // Save an empty result object
-            // var result = {};
+            var result = {};
 
             // Add the text and href of every link, and save them as properties of the result object
             let title = $(this).children("header").children("h2").text();
@@ -53,15 +53,17 @@ app.get("/scrape", function (req, res) {
             console.log("title: " + title, "summary: " + summary, "link: " + link);
 
             // Create a new Article using the `result` object built from scraping
-            // db.scrapedArticles.create(result)
-            //     .then(function (dbArticle) {
-            //         // View the added result in the console
-            //         console.log(dbArticle);
-            //     })
-            //     .catch(function (err) {
-            //         // If an error occurred, log it
-            //         console.log(err);
-            //     });
+            console.log(result);
+
+            db.Article.create(result)
+                .then(function (dbArticles) {
+                    // View the added result in the console
+                    console.log(dbArticles);
+                })
+                .catch(function (err) {
+                    // If an error occurred, log it
+                    console.log(err);
+                });
         });
 
         // Send a message to the client
