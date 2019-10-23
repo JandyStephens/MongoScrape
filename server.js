@@ -26,51 +26,46 @@ app.use(express.json());
 // Make public a static folder
 app.use(express.static("public"));
 
-//connect mongoose to your remote mongolab database if deployed, otherwise will connect to the local mongoHeadlines database on your computer
-var MONGODB_URI = process.env.MONGODB_URI || "mongodb://localhost/mongoHeadlines";
+//connect mongoose to your remote mongolab database if deployed, otherwise will connect to the local database on your computer
+var MONGODB_URI = process.env.MONGODB_URI || "mongodb://localhost/bonappetit";
 
 mongoose.connect(MONGODB_URI);
 
 
-// Scrape data from one site and place it into the mongodb db
+// A GET route for scraping the echoJS website
 app.get("/scrape", function (req, res) {
-    // Make a request via axios for the news section of `ycombinator`
-    axios.get("https://www.bonappetit.com/tag/highly-recommend").then(function (response) {
-        // Load the html body from axios into cheerio
+    // console.log("triggered");
+
+    // First, we grab the body of the html with axios
+    axios.get("https://arstechnica.com/").then(function (response) {
+        // Then, we load that into cheerio and save it to $ for a shorthand selector
         var $ = cheerio.load(response.data);
-        // For each element with a "h1" tag
-        $("h1").each(function (i, element) {
-            // Save the text and href of each link enclosed in the current element
-            var title = $(element).children("a").text();
-            var summary = $(element).children("p.feature-item-dek").text();
-            var link = $(element).children("a").attr("href");
-            var image = $(element).children("img.ba-picture--fit");
 
-            // If this found element had both a title, summary, link, and article
-            if (title && summary && link && image) {
-                // Insert data in the scrapedArticles db
-                db.scrapedArticles.insert({
-                    title,
-                    summary,
-                    link,
-                    image
-                },
-                    function (err, inserted) {
-                        if (err) {
-                            // Log the error if one is encountered during the query
-                            console.log(err);
-                        }
-                        else {
-                            // Otherwise, log the inserted data
-                            console.log(inserted);
-                        }
-                    });
-            }
+        // Now, we grab every h2 within an article tag, and do the following:
+        $("li").each(function (i, element) {
+            // Save an empty result object
+            // var result = {};
+
+            // Add the text and href of every link, and save them as properties of the result object
+            let title = $(this).children("header").text();
+            let link = $(this).children("a").attr("href");
+            console.log(element);
+
+            // Create a new Article using the `result` object built from scraping
+            // db.scrapedArticles.create(result)
+            //     .then(function (dbArticle) {
+            //         // View the added result in the console
+            //         console.log(dbArticle);
+            //     })
+            //     .catch(function (err) {
+            //         // If an error occurred, log it
+            //         console.log(err);
+            //     });
         });
-    });
 
-    // Send a "Scrape Complete" message to the browser
-    res.send("Scrape Complete");
+        // Send a message to the client
+        res.send("Scrape Complete");
+    });
 });
 
 
